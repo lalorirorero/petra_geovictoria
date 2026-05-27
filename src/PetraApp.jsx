@@ -122,12 +122,85 @@ function TypingDots() {
   );
 }
 
+const PASSWORD = "GeoVictoria2026";
+
+function PasswordGate({ onUnlock }) {
+  const [value, setValue] = useState("");
+  const [error, setError] = useState(false);
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    if (value === PASSWORD) {
+      onUnlock();
+    } else {
+      setError(true);
+      setValue("");
+      setTimeout(() => setError(false), 2000);
+    }
+  };
+
+  return (
+    <div style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", height: "100vh", background: "#f3f4f6", fontFamily: "'Segoe UI', system-ui, sans-serif" }}>
+      <div style={{ background: "white", borderRadius: 16, padding: "40px 48px", boxShadow: "0 4px 24px rgba(0,0,0,0.08)", display: "flex", flexDirection: "column", alignItems: "center", gap: 24, width: 340 }}>
+        <GeoLogo />
+        <div style={{ textAlign: "center" }}>
+          <div style={{ background: "#00AEEF", color: "white", borderRadius: 20, padding: "4px 14px", fontSize: 13, fontWeight: 700, letterSpacing: 0.5, display: "inline-block", marginBottom: 8 }}>
+            PETRA DE GEOVICTORIA
+          </div>
+          <p style={{ margin: 0, color: "#6b7280", fontSize: 14 }}>Ingresa la contraseña para continuar</p>
+        </div>
+        <form onSubmit={handleSubmit} style={{ width: "100%", display: "flex", flexDirection: "column", gap: 12 }}>
+          <input
+            type="password"
+            value={value}
+            onChange={e => setValue(e.target.value)}
+            placeholder="Contraseña"
+            autoFocus
+            style={{
+              width: "100%",
+              border: `1px solid ${error ? "#ef4444" : "#d1d5db"}`,
+              borderRadius: 10,
+              padding: "12px 16px",
+              fontSize: 14,
+              outline: "none",
+              boxSizing: "border-box",
+              transition: "border 0.15s",
+            }}
+          />
+          {error && <p style={{ margin: 0, fontSize: 13, color: "#ef4444", textAlign: "center" }}>Contraseña incorrecta</p>}
+          <button
+            type="submit"
+            style={{
+              background: "#00AEEF",
+              color: "white",
+              border: "none",
+              borderRadius: 10,
+              padding: "12px",
+              fontSize: 14,
+              fontWeight: 600,
+              cursor: "pointer",
+              transition: "background 0.15s",
+            }}
+            onMouseOver={e => e.currentTarget.style.background = "#0099d4"}
+            onMouseOut={e => e.currentTarget.style.background = "#00AEEF"}
+          >
+            Ingresar
+          </button>
+        </form>
+      </div>
+    </div>
+  );
+}
+
 export default function PetraApp() {
+  const [unlocked, setUnlocked] = useState(false);
   const [activeTab, setActiveTab] = useState("objeciones");
   const [messages, setMessages] = useState({});
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
   const messagesEndRef = useRef(null);
+
+  if (!unlocked) return <PasswordGate onUnlock={() => setUnlocked(true)} />;
 
   const currentMessages = messages[activeTab] || [];
 
