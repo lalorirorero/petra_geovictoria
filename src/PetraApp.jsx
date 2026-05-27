@@ -91,6 +91,22 @@ function GeoLogo() {
   );
 }
 
+function renderMarkdown(text) {
+  const lines = text.split("\n");
+  return lines.map((line, i) => {
+    const parts = [];
+    const regex = /\*\*(.+?)\*\*/g;
+    let last = 0, match;
+    while ((match = regex.exec(line)) !== null) {
+      if (match.index > last) parts.push(line.slice(last, match.index));
+      parts.push(<strong key={match.index}>{match[1]}</strong>);
+      last = match.index + match[0].length;
+    }
+    if (last < line.length) parts.push(line.slice(last));
+    return <span key={i}>{parts}{i < lines.length - 1 && <br />}</span>;
+  });
+}
+
 function TypingDots() {
   return (
     <div style={{ display: "flex", gap: 4, padding: "12px 16px", background: "white", borderRadius: 12, border: "1px solid #e5e7eb", width: "fit-content" }}>
@@ -253,9 +269,8 @@ export default function PetraApp() {
                   fontSize: 14,
                   lineHeight: 1.6,
                   border: msg.role === "assistant" ? "1px solid #e5e7eb" : "none",
-                  whiteSpace: "pre-wrap",
                 }}>
-                  {msg.content}
+                  {msg.role === "assistant" ? renderMarkdown(msg.content) : msg.content}
                 </div>
               </div>
             ))}
