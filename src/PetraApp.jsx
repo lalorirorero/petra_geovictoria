@@ -200,13 +200,13 @@ export default function PetraApp() {
   const [loading, setLoading] = useState(false);
   const messagesEndRef = useRef(null);
 
-  if (!unlocked) return <PasswordGate onUnlock={() => setUnlocked(true)} />;
-
   const currentMessages = messages[activeTab] || [];
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [currentMessages, loading]);
+
+  if (!unlocked) return <PasswordGate onUnlock={() => setUnlocked(true)} />;
 
   const sendMessage = async (text) => {
     const userText = text || input.trim();
