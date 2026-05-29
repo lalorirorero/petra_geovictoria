@@ -377,77 +377,13 @@ function TypingDots() {
   );
 }
 
-function renderMarkdown(text) {
-  const lines = text.split("\n");
-  return lines.map((line, i) => {
-    const parts = [];
-    const regex = /\*\*(.+?)\*\*/g;
-    let last = 0, match;
-    while ((match = regex.exec(line)) !== null) {
-      if (match.index > last) parts.push(line.slice(last, match.index));
-      parts.push(<strong key={match.index}>{match[1]}</strong>);
-      last = match.index + match[0].length;
-    }
-    if (last < line.length) parts.push(line.slice(last));
-    return <span key={i}>{parts}{i < lines.length - 1 && <br />}</span>;
-  });
-}
-
-// ─── PANTALLA DE CONTRASEÑA ───────────────────────────────────────────────────
-
-const APP_PASSWORD = "GeoVictoria2026";
-
-function PasswordGate({ onUnlock }) {
-  const [value, setValue] = useState("");
-  const [error, setError] = useState(false);
-
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    if (value === APP_PASSWORD) {
-      onUnlock();
-    } else {
-      setError(true);
-      setValue("");
-      setTimeout(() => setError(false), 2000);
-    }
-  };
-
-  return (
-    <div style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", height: "100vh", background: "#f3f4f6", fontFamily: "'Segoe UI', system-ui, sans-serif" }}>
-      <div style={{ background: "white", borderRadius: 20, padding: "40px 48px", boxShadow: "0 4px 24px rgba(0,0,0,0.08)", display: "flex", flexDirection: "column", alignItems: "center", gap: 24, width: 340 }}>
-        <GeoLogo size={52} />
-        <div style={{ textAlign: "center" }}>
-          <div style={{ background: "#00AEEF", color: "white", borderRadius: 20, padding: "4px 18px", fontSize: 14, fontWeight: 700, letterSpacing: 1, display: "inline-block", marginBottom: 8 }}>PETRA</div>
-          <p style={{ margin: 0, color: "#6b7280", fontSize: 14 }}>Ingresa la contraseña para continuar</p>
-        </div>
-        <form onSubmit={handleSubmit} style={{ width: "100%", display: "flex", flexDirection: "column", gap: 12 }}>
-          <input
-            type="password"
-            value={value}
-            onChange={e => setValue(e.target.value)}
-            placeholder="Contraseña"
-            autoFocus
-            style={{ width: "100%", border: `1px solid ${error ? "#ef4444" : "#d1d5db"}`, borderRadius: 10, padding: "12px 16px", fontSize: 14, outline: "none", boxSizing: "border-box", transition: "border 0.15s" }}
-          />
-          {error && <p style={{ margin: 0, fontSize: 13, color: "#ef4444", textAlign: "center" }}>Contraseña incorrecta</p>}
-          <button type="submit" style={{ background: "#00AEEF", color: "white", border: "none", borderRadius: 10, padding: "12px", fontSize: 14, fontWeight: 600, cursor: "pointer" }}
-            onMouseOver={e => e.currentTarget.style.background = "#0099d4"}
-            onMouseOut={e => e.currentTarget.style.background = "#00AEEF"}>
-            Ingresar
-          </button>
-        </form>
-      </div>
-    </div>
-  );
-}
-
-// ─── PANTALLA DE LOGIN CON PIN ────────────────────────────────────────────────
+// ─── PANTALLA DE LOGIN ────────────────────────────────────────────────────────
 
 function LoginScreen({ onLogin }) {
   const [pin, setPin] = useState("");
   const [name, setName] = useState("");
   const [error, setError] = useState("");
-  const [mode, setMode] = useState("enter");
+  const [mode, setMode] = useState("enter"); // "enter" | "register"
 
   const handleSubmit = () => {
     const cleanPin = pin.trim();
@@ -456,7 +392,10 @@ function LoginScreen({ onLogin }) {
     const users = loadUsers();
 
     if (mode === "enter") {
-      if (!users[cleanPin]) { setError("PIN no encontrado. ¿Es nuevo? Regístrate primero."); return; }
+      if (!users[cleanPin]) {
+        setError("PIN no encontrado. ¿Es nuevo? Regístrate primero.");
+        return;
+      }
       onLogin({ pin: cleanPin, name: users[cleanPin], sessions: loadSessions(cleanPin) });
     } else {
       if (!name.trim()) { setError("Escribe tu nombre."); return; }
@@ -472,12 +411,14 @@ function LoginScreen({ onLogin }) {
       <div style={{ background: "white", borderRadius: 20, padding: "40px 36px", width: "100%", maxWidth: 380, boxShadow: "0 4px 24px rgba(0,0,0,0.08)" }}>
         <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 12, marginBottom: 32 }}>
           <GeoLogo size={52} />
-          <div style={{ background: "#00AEEF", color: "white", borderRadius: 20, padding: "4px 18px", fontSize: 14, fontWeight: 700, letterSpacing: 1 }}>PETRA</div>
+          <div>
+            <div style={{ background: "#00AEEF", color: "white", borderRadius: 20, padding: "4px 18px", fontSize: 14, fontWeight: 700, letterSpacing: 1, textAlign: "center" }}>PETRA</div>
+          </div>
           <p style={{ margin: 0, fontSize: 13, color: "#6b7280", textAlign: "center" }}>Tu coach de ventas GeoVictoria</p>
         </div>
 
         <div style={{ display: "flex", borderRadius: 10, overflow: "hidden", border: "1px solid #e5e7eb", marginBottom: 24 }}>
-          {["enter", "register"].map(m => (
+          {["enter","register"].map(m => (
             <button key={m} onClick={() => { setMode(m); setError(""); }} style={{ flex: 1, padding: "10px", border: "none", background: mode === m ? "#00AEEF" : "white", color: mode === m ? "white" : "#6b7280", fontSize: 13, fontWeight: mode === m ? 600 : 400, cursor: "pointer", transition: "all 0.15s" }}>
               {m === "enter" ? "Tengo PIN" : "Soy nuevo"}
             </button>
@@ -488,8 +429,7 @@ function LoginScreen({ onLogin }) {
           {mode === "register" && (
             <div>
               <label style={{ fontSize: 12, fontWeight: 600, color: "#374151", display: "block", marginBottom: 6 }}>TU NOMBRE</label>
-              <input value={name} onChange={e => setName(e.target.value)} placeholder="Ej: Karla Guerrero"
-                style={{ width: "100%", border: "1px solid #d1d5db", borderRadius: 10, padding: "11px 14px", fontSize: 14, outline: "none", boxSizing: "border-box", color: "#374151" }}
+              <input value={name} onChange={e => setName(e.target.value)} placeholder="Ej: Karla Guerrero" style={{ width: "100%", border: "1px solid #d1d5db", borderRadius: 10, padding: "11px 14px", fontSize: 14, outline: "none", boxSizing: "border-box", color: "#374151" }}
                 onFocus={e => e.target.style.borderColor = "#00AEEF"} onBlur={e => e.target.style.borderColor = "#d1d5db"} />
             </div>
           )}
@@ -499,8 +439,7 @@ function LoginScreen({ onLogin }) {
             </label>
             <input value={pin} onChange={e => setPin(e.target.value)} onKeyDown={e => e.key === "Enter" && handleSubmit()}
               placeholder={mode === "register" ? "Mínimo 4 caracteres" : "Ingresa tu PIN"}
-              type="password"
-              style={{ width: "100%", border: "1px solid #d1d5db", borderRadius: 10, padding: "11px 14px", fontSize: 14, outline: "none", boxSizing: "border-box", color: "#374151", letterSpacing: 3 }}
+              type="password" style={{ width: "100%", border: "1px solid #d1d5db", borderRadius: 10, padding: "11px 14px", fontSize: 14, outline: "none", boxSizing: "border-box", color: "#374151", letterSpacing: 3 }}
               onFocus={e => e.target.style.borderColor = "#00AEEF"} onBlur={e => e.target.style.borderColor = "#d1d5db"} />
           </div>
 
@@ -515,7 +454,7 @@ function LoginScreen({ onLogin }) {
   );
 }
 
-// ─── BARRA LATERAL ────────────────────────────────────────────────────────────
+// ─── BARRA LATERAL DE HISTORIAL ───────────────────────────────────────────────
 
 function Sidebar({ sessions, currentSessionId, onSelectSession, onNewSession, userName, onLogout, sidebarOpen, setSidebarOpen }) {
   const TAB_COLORS = { objeciones: "#f59e0b", demo: "#8b5cf6", postventa: "#10b981", competencia: "#ef4444" };
@@ -532,7 +471,7 @@ function Sidebar({ sessions, currentSessionId, onSelectSession, onNewSession, us
             <p style={{ margin: 0, fontSize: 12, color: "#9ca3af" }}>Sesión activa</p>
             <p style={{ margin: 0, fontSize: 14, fontWeight: 600, color: "white" }}>{userName}</p>
           </div>
-          <button onClick={onLogout} style={{ background: "transparent", border: "1px solid #374151", borderRadius: 8, padding: "5px 8px", cursor: "pointer", fontSize: 11, color: "#9ca3af" }}>Salir</button>
+          <button onClick={onLogout} title="Cerrar sesión" style={{ background: "transparent", border: "1px solid #374151", borderRadius: 8, padding: "5px 8px", cursor: "pointer", fontSize: 11, color: "#9ca3af" }}>Salir</button>
         </div>
       </div>
 
@@ -551,15 +490,16 @@ function Sidebar({ sessions, currentSessionId, onSelectSession, onNewSession, us
             const color = TAB_COLORS[s.tab] || "#00AEEF";
             return (
               <button key={s.id} onClick={() => onSelectSession(s)} style={{
-                width: "100%", background: isActive ? "#1f2937" : "transparent",
-                border: isActive ? "1px solid #374151" : "1px solid transparent",
+                width: "100%", background: isActive ? "#1f2937" : "transparent", border: isActive ? "1px solid #374151" : "1px solid transparent",
                 borderRadius: 10, padding: "10px 12px", cursor: "pointer", textAlign: "left", marginBottom: 4, transition: "all 0.15s",
               }}
                 onMouseOver={e => { if (!isActive) e.currentTarget.style.background = "#1a2332"; }}
                 onMouseOut={e => { if (!isActive) e.currentTarget.style.background = "transparent"; }}>
                 <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 4 }}>
                   <div style={{ width: 8, height: 8, borderRadius: "50%", background: color, flexShrink: 0 }} />
-                  <span style={{ fontSize: 11, color, fontWeight: 600, flex: 1, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{s.tabLabel}</span>
+                  <span style={{ fontSize: 11, color: color, fontWeight: 600, flex: 1, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                    {s.tabLabel}
+                  </span>
                   <span style={{ fontSize: 10, color: "#6b7280", whiteSpace: "nowrap" }}>{formatDate(s.startedAt)}</span>
                 </div>
                 <p style={{ margin: 0, fontSize: 12, color: "#9ca3af", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", paddingLeft: 16 }}>
@@ -581,8 +521,7 @@ function Sidebar({ sessions, currentSessionId, onSelectSession, onNewSession, us
 // ─── APP PRINCIPAL ────────────────────────────────────────────────────────────
 
 export default function PetraApp() {
-  const [passwordPassed, setPasswordPassed] = useState(false);
-  const [user, setUser] = useState(null);
+  const [user, setUser] = useState(null); // { pin, name }
   const [sessions, setSessions] = useState([]);
   const [currentSession, setCurrentSession] = useState(null);
   const [activeTab, setActiveTab] = useState("objeciones");
@@ -593,12 +532,11 @@ export default function PetraApp() {
 
   const messages = currentSession?.messages || [];
 
-  // hooks SIEMPRE antes de cualquier return condicional
+  // hooks siempre antes de cualquier return condicional
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages, loading]);
 
-  if (!passwordPassed) return <PasswordGate onUnlock={() => setPasswordPassed(true)} />;
   if (!user) return <LoginScreen onLogin={handleLogin} />;
 
   function handleLogin({ pin, name, sessions: loadedSessions }) {
@@ -608,13 +546,15 @@ export default function PetraApp() {
       setCurrentSession(loadedSessions[0]);
       setActiveTab(loadedSessions[0].tab);
     } else {
-      setCurrentSession(newSession("objeciones"));
+      const s = newSession("objeciones");
+      setCurrentSession(s);
       setActiveTab("objeciones");
     }
   }
 
   const handleNewSession = () => {
-    setCurrentSession(newSession(activeTab));
+    const s = newSession(activeTab);
+    setCurrentSession(s);
   };
 
   const handleSelectSession = (s) => {
@@ -625,7 +565,8 @@ export default function PetraApp() {
   const handleTabChange = (tabId) => {
     setActiveTab(tabId);
     if (currentSession && currentSession.messages.length > 0 && currentSession.tab !== tabId) {
-      setCurrentSession(newSession(tabId));
+      const s = newSession(tabId);
+      setCurrentSession(s);
     } else if (currentSession) {
       setCurrentSession({ ...currentSession, tab: tabId, tabLabel: TABS.find(t => t.id === tabId)?.label || tabId });
     }
@@ -647,6 +588,7 @@ export default function PetraApp() {
 
     const newMsg = { role: "user", content: userText };
     const updatedMessages = [...messages, newMsg];
+
     const updatedSession = {
       ...currentSession,
       tab: activeTab,
@@ -670,7 +612,8 @@ export default function PetraApp() {
       });
       const data = await response.json();
       const reply = data.content?.[0]?.text || "No pude obtener una respuesta. Intenta de nuevo.";
-      const finalSession = { ...updatedSession, messages: [...updatedMessages, { role: "assistant", content: reply }] };
+      const finalMessages = [...updatedMessages, { role: "assistant", content: reply }];
+      const finalSession = { ...updatedSession, messages: finalMessages };
       setCurrentSession(finalSession);
       persistSession(finalSession);
     } catch {
@@ -701,7 +644,9 @@ export default function PetraApp() {
 
         <div style={{ background: "white", borderBottom: "1px solid #e5e7eb", padding: "12px 20px", display: "flex", alignItems: "center", gap: 12 }}>
           <GeoLogo size={34} />
-          <div style={{ background: "#00AEEF", color: "white", borderRadius: 20, padding: "4px 18px", fontSize: 14, fontWeight: 700, letterSpacing: 1 }}>PETRA</div>
+          <div style={{ background: "#00AEEF", color: "white", borderRadius: 20, padding: "4px 18px", fontSize: 14, fontWeight: 700, letterSpacing: 1 }}>
+            PETRA
+          </div>
           <div style={{ marginLeft: "auto", display: "flex", alignItems: "center", gap: 6, fontSize: 13, color: "#6b7280" }}>
             <div style={{ width: 8, height: 8, borderRadius: "50%", background: "#22c55e" }} />
             En línea
@@ -755,9 +700,9 @@ export default function PetraApp() {
                   <div style={{
                     maxWidth: "72%", background: msg.role === "user" ? "#00AEEF" : "white",
                     color: msg.role === "user" ? "white" : "#111827", borderRadius: 12, padding: "12px 16px",
-                    fontSize: 14, lineHeight: 1.6, border: msg.role === "assistant" ? "1px solid #e5e7eb" : "none",
+                    fontSize: 14, lineHeight: 1.6, border: msg.role === "assistant" ? "1px solid #e5e7eb" : "none", whiteSpace: "pre-wrap",
                   }}>
-                    {msg.role === "assistant" ? renderMarkdown(msg.content) : msg.content}
+                    {msg.content}
                   </div>
                 </div>
               ))}
